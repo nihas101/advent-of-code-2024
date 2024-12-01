@@ -4,6 +4,10 @@ A repository containing my solutions to the [Advent of code 2024](https://advent
 ## Requirements
 The solutions are written in [Lua](https://www.lua.org/). Lua is required to run the solutions.
 
+## Useful Links
+- [LuaRocks' Lua Style Guide](https://github.com/luarocks/lua-style-guide)
+- [Luacheck](https://github.com/mpeterv/luacheck) for linting and static analysis
+
 ## Solutions
 The solutions are located in files `dayXY.lua`. `lib` contains some helper functions referenced in the solution files.
 
