@@ -1,5 +1,5 @@
 local split_str = require('lib/split_str')
-local read_file = require('lib/read_file')
+local read_input = require('lib/read_input')
 table.zip = require('lib/table_zip')
 
 local function part1(xs, ys)
@@ -41,17 +41,12 @@ local function part2(ids, frequency_ids)
     return similarity_score
 end
 
-local input
-if arg[1] == "--input" then
-    input = read_file("input/day01.txt")
-else
-    input = "3   4\
+local input = read_input("3   4\
     4   3\
     2   5\
     1   3\
     3   9\
-    3   3"
-end
+    3   3")
 
 local lines = split_str(input, "\n")
 
