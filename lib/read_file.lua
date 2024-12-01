@@ -3,7 +3,9 @@ local function read_file(file)
     if not f then
         return nil
     end
-    return f:read "*a"
+    local content = f:read "*a"
+    f:close()
+    return content
 end
 
 return read_file
