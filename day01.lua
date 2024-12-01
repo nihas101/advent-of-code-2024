@@ -19,23 +19,19 @@ end
 
 local function part2(ids, frequency_ids)
     local frequencies = {}
-    local prev_element, prev_frequency = frequency_ids[1], 1
-    for i = 2, #frequency_ids do
-        if prev_element == frequency_ids[i] then
-            prev_frequency = prev_frequency + 1
-        else
-            frequencies[prev_element] = prev_frequency
-            prev_element, prev_frequency = frequency_ids[i], 1
+    setmetatable(frequencies, {
+        __index = function(_, _)
+            return 0
         end
+    })
+
+    for _, freq in pairs(frequency_ids) do
+        frequencies[freq] = frequencies[freq] + 1
     end
-    frequencies[prev_element] = prev_frequency
 
     local similarity_score = 0
     for _, e in pairs(ids) do
         local mult = frequencies[e]
-        if mult == nil then
-            mult = 0
-        end
         similarity_score = similarity_score + (e * mult)
     end
     return similarity_score
