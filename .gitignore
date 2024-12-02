@@ -1,2 +1,4 @@
 /input
 /debug
+/.clj-kondo
+/.lsp

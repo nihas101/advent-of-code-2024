@@ -1,6 +1,6 @@
-local split_str = require('lib/split_str')
-local read_input = require('lib/read_input')
-table.zip = require('lib/table_zip')
+local split_str = require('lib.split_str')
+local read_input = require('lib.read_input')
+table.zip = require('lib.table_zip')
 
 local Day01 = {
     consumer_values = {},
