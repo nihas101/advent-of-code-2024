@@ -1,4 +1,4 @@
-local split_str = require('lib.split_str')
+local str = require('lib.split_str')
 local read_input = require('lib.read_input')
 table.zip = require('lib.table_zip')
 
@@ -100,12 +100,12 @@ function Input:new(o)
     3   9\
     3   3")
 
-    local lines = split_str(input, "\n")
+    local lines = str.split(input, "\n")
 
     local left_ids = {};
     local right_ids = {};
     for _, value in pairs(lines) do
-        local line = split_str(value, "%s")
+        local line = str.split(value, "%s")
         table.insert(left_ids, tonumber(line[1]))
         table.insert(right_ids, tonumber(line[2]))
     end

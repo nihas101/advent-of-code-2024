@@ -1,5 +1,5 @@
 local read_input = require('lib.read_input')
-local split_str = require('lib.split_str')
+local str = require('lib.split_str')
 table.zip = require('lib.table_zip')
 local Range = require('lib.range')
 
@@ -128,11 +128,11 @@ function Input:new(o)
     8 6 4 4 1\
     1 3 6 7 9")
 
-    local lines = split_str(input, "\n")
+    local lines = str.split(input, "\n")
 
     local reports = {}
     for _, value in pairs(lines) do
-        local lvls = split_str(value, "%s")
+        local lvls = str.split(value, "%s")
         local report = {}
         for _, lvl in pairs(lvls) do
             table.insert(report, tonumber(lvl))

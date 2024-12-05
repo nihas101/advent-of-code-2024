@@ -1,5 +1,5 @@
 local read_input = require('lib.read_input')
-local split_str = require('lib.split_str')
+local str = require('lib.split_str')
 
 local Day04 = {}
 
@@ -215,7 +215,7 @@ SAXAMASAAA\
 MAMMMXMMMM\
 MXMXAXMASX")
 
-    local lines = split_str(input, "\n")
+    local lines = str.split(input, "\n")
 
     o.input = lines
     return o
