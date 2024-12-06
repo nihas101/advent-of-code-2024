@@ -25,103 +25,113 @@ function Day04:solve()
     return xmas_found
 end
 
-local left_match = function(input, x, y, pattern)
-    if y - #pattern < 0 then
+local Matcher = {}
+
+function Matcher:new(pattern)
+    local o = {}
+
+    o.parent = self
+    setmetatable(o, self)
+    self.__index = self
+
+    o.pattern = pattern
+    return o
+end
+
+function Matcher:matches(input, x, y)
+    if self:invalid_position(input, x, y) then
         return false
     end
-    local line = input[x]
-    for i = 0, #pattern - 1 do
-        if line:byte(y - i) ~= pattern:byte(i + 1) then
+    for i = 0, #self.pattern - 1 do
+        if self:pattern_does_not_match_at(input, x, y, i) then
             return false
         end
     end
     return true
 end
 
-local right_match = function(input, x, y, pattern)
-    if not input[x] or (y + (#pattern - 1) > #input[x]) then
-        return false
-    end
-    local line = input[x]
-    for i = 0, #pattern - 1 do
-        if line:byte(y + i) ~= pattern:byte(i + 1) then
-            return false
-        end
-    end
-    return true
+local LeftMatcher = Matcher:new()
+
+function LeftMatcher:invalid_position(_, _, y)
+    return y - #self.pattern < 0
 end
 
-local up_match = function(input, x, y, pattern)
-    if x - #pattern < 0 then
-        return false
-    end
-    for i = 0, #pattern - 1 do
-        if input[x - i]:byte(y) ~= pattern:byte(i + 1) then
-            return false
-        end
-    end
-    return true
+function LeftMatcher:pattern_does_not_match_at(input, x, y, i)
+    return input[x]:byte(y - i) ~= self.pattern:byte(i + 1)
 end
 
-local down_match = function(input, x, y, pattern)
-    if x + (#pattern - 1) > #input then
-        return false
-    end
-    for i = 0, #pattern - 1 do
-        if input[x + i]:byte(y) ~= pattern:byte(i + 1) then
-            return false
-        end
-    end
-    return true
+local RightMatcher = Matcher:new()
+
+function RightMatcher:invalid_position(input, x, y)
+    return not input[x] or (y + (#self.pattern - 1) > #input[x])
 end
 
-local diagonal_left_up_match = function(input, x, y, pattern)
-    if (not input[x] or y < 1) or (y - #pattern < 0 or x - #pattern < 0) then
-        return false
-    end
-    for i = 0, #pattern - 1 do
-        if input[x - i]:byte(y - i) ~= pattern:byte(i + 1) then
-            return false
-        end
-    end
-    return true
+function RightMatcher:pattern_does_not_match_at(input, x, y, i)
+    return input[x]:byte(y + i) ~= self.pattern:byte(i + 1)
 end
 
-local diagonal_right_up_match = function(input, x, y, pattern)
-    if (not input[x] or y < 1) or (y + (#pattern - 1) > #input[x] or x - #pattern < 0) then
-        return false
-    end
-    for i = 0, #pattern - 1 do
-        if input[x - i]:byte(y + i) ~= pattern:byte(i + 1) then
-            return false
-        end
-    end
-    return true
+local UpMatcher = Matcher:new()
+
+function UpMatcher:invalid_position(_, x, _)
+    return x - #self.pattern < 0
 end
 
-local diagonal_left_down_match = function(input, x, y, pattern)
-    if (not input[x] or y > #input[x]) or (y - #pattern < 0 or x + (#pattern - 1) > #input) then
-        return false
-    end
-    for i = 0, #pattern - 1 do
-        if input[x + i]:byte(y - i) ~= pattern:byte(i + 1) then
-            return false
-        end
-    end
-    return true
+function UpMatcher:pattern_does_not_match_at(input, x, y, i)
+    return input[x - i]:byte(y) ~= self.pattern:byte(i + 1)
 end
 
-local diagonal_right_down_match = function(input, x, y, pattern)
-    if (not input[x] or y > #input[x]) or (y + (#pattern - 1) > #input[x] or x + (#pattern - 1) > #input) then
-        return false
-    end
+local DownMatcher = Matcher:new()
 
-    for i = 0, #pattern - 1 do
-        if input[x + i]:byte(y + i) ~= pattern:byte(i + 1) then
-            return false
-        end
-    end
-    return true
+function DownMatcher:invalid_position(input, x, _)
+    return x + (#self.pattern - 1) > #input
+end
+
+function DownMatcher:pattern_does_not_match_at(input, x, y, i)
+    return input[x + i]:byte(y) ~= self.pattern:byte(i + 1)
+end
+
+local LeftUpMatcher = Matcher:new()
+
+function LeftUpMatcher:invalid_position(input, x, y)
+    return (not input[x] or y < 1)
+    or (y - #self.pattern < 0 or x - #self.pattern < 0)
+end
+
+function LeftUpMatcher:pattern_does_not_match_at(input, x, y, i)
+    return input[x - i]:byte(y - i) ~= self.pattern:byte(i + 1)
+end
+
+local RightUpMatcher = Matcher:new()
+
+function RightUpMatcher:invalid_position(input, x, y)
+    return (not input[x] or y < 1)
+    or (y + (#self.pattern - 1) > #input[x] or x - #self.pattern < 0)
+end
+
+function RightUpMatcher:pattern_does_not_match_at(input, x, y, i)
+    return input[x - i]:byte(y + i) ~= self.pattern:byte(i + 1)
+end
+
+local LeftDownMatcher = Matcher:new()
+
+function LeftDownMatcher:invalid_position(input, x, y)
+    return (not input[x] or y > #input[x])
+    or (y - #self.pattern < 0 or x + (#self.pattern - 1) > #input)
+end
+
+function LeftDownMatcher:pattern_does_not_match_at(input, x, y, i)
+    return input[x + i]:byte(y - i) ~= self.pattern:byte(i + 1)
+end
+
+local RightDownMatcher = Matcher:new()
+
+function RightDownMatcher:invalid_position(input, x, y)
+    return (not input[x] or y > #input[x])
+    or (y + (#self.pattern - 1) > #input[x] or x + (#self.pattern - 1) > #input)
+end
+
+function RightDownMatcher:pattern_does_not_match_at(input, x, y, i)
+    return input[x + i]:byte(y + i) ~= self.pattern:byte(i + 1)
 end
 
 local Part1 = Day04:new()
@@ -137,31 +147,23 @@ function Part1:new(input, pattern)
 end
 
 function Part1:count_xmas(x, y)
+    local matchers = {
+        LeftMatcher:new(self.pattern),
+        RightMatcher:new(self.pattern),
+        UpMatcher:new(self.pattern),
+        DownMatcher:new(self.pattern),
+        LeftUpMatcher:new(self.pattern),
+        RightUpMatcher:new(self.pattern),
+        LeftDownMatcher:new(self.pattern),
+        RightDownMatcher:new(self.pattern)
+    }
+
     local xmas_found = 0
     if self.input[x]:byte(y) == self.target then
-        if left_match(self.input, x, y, self.pattern) then
-            xmas_found = xmas_found + 1
-        end
-        if diagonal_left_up_match(self.input, x, y, self.pattern) then
-            xmas_found = xmas_found + 1
-        end
-        if up_match(self.input, x, y, self.pattern) then
-            xmas_found = xmas_found + 1
-        end
-        if diagonal_right_up_match(self.input, x, y, self.pattern) then
-            xmas_found = xmas_found + 1
-        end
-        if right_match(self.input, x, y, self.pattern) then
-            xmas_found = xmas_found + 1
-        end
-        if diagonal_right_down_match(self.input, x, y, self.pattern) then
-            xmas_found = xmas_found + 1
-        end
-        if down_match(self.input, x, y, self.pattern) then
-            xmas_found = xmas_found + 1
-        end
-        if diagonal_left_down_match(self.input, x, y, self.pattern) then
-            xmas_found = xmas_found + 1
+        for _, matcher in pairs(matchers) do
+            if matcher:matches(self.input, x, y) then
+                xmas_found = xmas_found + 1
+            end
         end
     end
     return xmas_found
@@ -180,15 +182,20 @@ function Part2:new(input, pattern)
 end
 
 function Part2:count_xmas(x, y)
+    local lum = LeftUpMatcher:new(self.pattern)
+    local rum = RightUpMatcher:new(self.pattern)
+    local ldm = LeftDownMatcher:new(self.pattern)
+    local rdm = RightDownMatcher:new(self.pattern)
+
     if self.input[x]:byte(y) == self.target then
-        if (diagonal_right_up_match(self.input, x + 1, y - 1, self.pattern) and
-            (diagonal_left_up_match(self.input, x + 1, y + 1, self.pattern))) or
-            (diagonal_right_up_match(self.input, x + 1, y - 1, self.pattern) and
-                diagonal_right_down_match(self.input, x - 1, y - 1, self.pattern)) or
-            (diagonal_left_down_match(self.input, x - 1, y + 1, self.pattern) and
-                diagonal_right_down_match(self.input, x - 1, y - 1, self.pattern)) or
-            (diagonal_left_down_match(self.input, x - 1, y + 1, self.pattern) and
-                diagonal_left_up_match(self.input, x + 1, y + 1, self.pattern)) then
+        if (rum:matches(self.input, x + 1, y - 1, self.pattern) and
+            (lum:matches(self.input, x + 1, y + 1, self.pattern))) or
+            (rum:matches(self.input, x + 1, y - 1, self.pattern) and
+                rdm:matches(self.input, x - 1, y - 1, self.pattern)) or
+            (ldm:matches(self.input, x - 1, y + 1, self.pattern) and
+                rdm:matches(self.input, x - 1, y - 1, self.pattern)) or
+            (ldm:matches(self.input, x - 1, y + 1, self.pattern) and
+                lum:matches(self.input, x + 1, y + 1, self.pattern)) then
             return 1
         end
     end
