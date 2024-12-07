@@ -113,7 +113,7 @@ function Input:new(o)
 97,13,75,29,47\
 ") .. "\n"
 
-    local sections = str.split_exact(input, "(.-)\n\n")
+    local sections = str.global_match(input, "(.-)\n\n")
     local rules = str.split(sections[1], "(.-)\n")
 
     local rule_map = {}

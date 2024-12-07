@@ -1,4 +1,4 @@
-local function split_exact(input, sep)
+local function global_match(input, sep)
     if sep == nil then
         sep = "%s"
     end
@@ -13,10 +13,10 @@ local function split(input, sep)
     if sep == nil then
         sep = "%s"
     end
-    return split_exact(input, "([^" .. sep .. "]+)")
+    return global_match(input, "([^" .. sep .. "]+)")
 end
 
 return {
     split = split,
-    split_exact = split_exact
+    global_match = global_match
 }
