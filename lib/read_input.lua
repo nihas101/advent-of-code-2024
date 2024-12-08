@@ -1,4 +1,12 @@
-local read_file = require('lib/read_file')
+local function read_file(file)
+    local f = io.open(file, "rb")
+    if not f then
+        return nil
+    end
+    local content = f:read "*a"
+    f:close()
+    return content
+end
 
 local function read_input(fallback)
     if arg[1] == "--input" then

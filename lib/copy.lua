@@ -1,9 +1,15 @@
 -- https://gist.github.com/tylerneylon/81333721109155b2d244
-local function copy(obj)
+local function copy(obj, seen)
+    -- Handle non-tables and previously-seen tables.
     if type(obj) ~= 'table' then return obj end
+    if seen and seen[obj] then return seen[obj] end
+  
+    -- New table; mark it as seen and copy recursively.
+    local s = seen or {}
     local res = {}
-    for k, v in pairs(obj) do res[copy(k)] = copy(v) end
-    return res
+    s[obj] = res
+    for k, v in pairs(obj) do res[copy(k, s)] = copy(v, s) end
+    return setmetatable(res, getmetatable(obj))
 end
 
 return copy

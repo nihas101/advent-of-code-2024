@@ -1,6 +1,7 @@
 local read_input = require('lib.read_input')
 local str = require('lib.split_str')
 local copy = require('lib.copy')
+local Grid = require('lib.grid')
 
 local Day06 = {}
 
@@ -47,16 +48,14 @@ function Day06:turn_guard()
     end
 end
 
-
 function Day06:move_guard()
     local guard = self.input.guard
-    local obstacles = self.input.obstacles
 
     for _ = 1, 4 do
         local x = guard.x + guard.direction.x
         local y = guard.y + guard.direction.y
 
-        if obstacles[x] and obstacles[x][y] then
+        if self.input:get_value(x, y) then
             self:turn_guard()
         else
             guard.x = x
@@ -67,21 +66,11 @@ function Day06:move_guard()
     print("Guard is boxed in and cannot move!")
 end
 
-function Day06:out_of_bounds()
-    local g = self.input.guard
-    local d = self.input.dimensions
-
-    return g.x < 1 or d.height < g.x
-    or g.y < 1 or d.width < g.y
-end
-
 function Day06:state_visited(res)
     local g = self.input.guard
     local gs = res.guard_states
 
-    return gs[g.x] and gs[g.x][g.y]
-        and gs[g.x][g.y][g.direction.x]
-        and gs[g.x][g.y][g.direction.x][g.direction.y]
+    return gs[g.x] and gs[g.x][g.y] and gs[g.x][g.y][g.direction.x] and gs[g.x][g.y][g.direction.x][g.direction.y]
 end
 
 function Day06:visit_state(res)
@@ -115,7 +104,7 @@ function Day06:simulate_guard()
         is_loop = false
     }
 
-    while not self:out_of_bounds() do
+    while not self.input:is_out_of_bounds(self.input.guard) do
         if self:state_visited(res) then
             res.is_loop = true
             return res
@@ -154,11 +143,6 @@ function Part2:new(input)
     return o
 end
 
-function Part2:set_obstacle(x, y, value)
-    self.input.obstacles[x] = self.input.obstacles[x] or {}
-    self.input.obstacles[x][y] = value
-end
-
 function Part2:solve()
     local guard = copy(self.input.guard)
     local obstacle_candidates = self:simulate_guard().positions
@@ -168,11 +152,11 @@ function Part2:solve()
         for y, _ in pairs(ys) do
             if x ~= guard.x or y ~= guard.y then
                 self.input.guard = copy(guard)
-                self:set_obstacle(x, y, true)
+                self.input:set_value(x, y, true)
                 if self:simulate_guard().is_loop then
                     loops_found = loops_found + 1
                 end
-                self:set_obstacle(x, y, nil)
+                self.input:set_value(x, y, nil)
             end
         end
     end
@@ -202,40 +186,30 @@ function Input:new(o)
     local lines = str.split(input, "\n")
 
     local state = {
-        guard = {},
-        obstacles = {},
-        dimensions = {
-            width = #lines[1],
-            height = #lines
-        }
+        guard = {}
     }
-    local obstacle = "#"
-    local guard = "^"
-    for x, line in pairs(lines) do
-        for y = 1, #line do
-            if line:byte(y) == obstacle:byte(1) then
-                state.obstacles[x] = state.obstacles[x] or {}
-                state.obstacles[x][y] = true
-            elseif line:byte(y) == guard:byte(1) then
-                state.guard = {
-                    direction = NORTH,
-                    x = x,
-                    y = y
-                }
-            end
+    local OBSTACLE = "#"
+    local GUARD = "^"
+    local grid = Grid:new(state, lines, function(g, x, y, line)
+        if line:byte(y) == OBSTACLE:byte(1) then
+            g:set_value(x, y, true)
+        elseif line:byte(y) == GUARD:byte(1) then
+            state.guard = {
+                direction = NORTH,
+                x = x,
+                y = y
+            }
         end
-    end
+    end)
 
-    o.input = state
+    o.input = grid
     return o
 end
 
 local input = Input:new()
 
--- Part 1: 5095
 local p1 = Part1:new(input)
 print("Part 1: " .. p1:solve())
 
--- 1933
 local p2 = Part2:new(input)
 print("Part 2: " .. p2:solve())

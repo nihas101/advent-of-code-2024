@@ -1,5 +1,6 @@
 local read_input = require('lib.read_input')
 local str = require('lib.split_str')
+local Grid = require('lib.grid')
 
 local Day08 = {}
 
@@ -23,34 +24,52 @@ function Part1:new(input)
     return o
 end
 
-function Day08:valid_position(pos)
-    local width = self.input.dimensions.width
-    local height = self.input.dimensions.height
-    return pos[1] > 0 and pos[2] > 0 and pos[1] <= width and pos[2] <= height
-end
-
 function Day08:not_seen_yet(pos)
-    return not self.seen_antinodes[pos[1]] or not self.seen_antinodes[pos[1]][pos[2]]
+    return not self.seen_antinodes[pos.x] or not self.seen_antinodes[pos.x][pos.y]
 end
 
 function Day08:add_to_seen(pos)
-    self.seen_antinodes[pos[1]] = self.seen_antinodes[pos[1]] or {}
-    self.seen_antinodes[pos[1]][pos[2]] = true
+    self.seen_antinodes[pos.x] = self.seen_antinodes[pos.x] or {}
+    self.seen_antinodes[pos.x][pos.y] = true
 end
 
 local function antinode_positions(a, b, scalar)
     scalar = scalar or 1
-    local xs = math.abs(a[1] - b[1]) * scalar
-    local ys = math.abs(a[2] - b[2]) * scalar
+    local xs = math.abs(a.x - b.x) * scalar
+    local ys = math.abs(a.y - b.y) * scalar
 
-    if a[1] < b[1] and a[2] < b[2] then
-        return {(a[1] - xs), (a[2] - ys)}, {(b[1] + xs), (b[2] + ys)}
-    elseif a[1] < b[1] and a[2] > b[2] then
-        return {(a[1] - xs), (a[2] + ys)}, {(b[1] + xs), (b[2] - ys)}
-    elseif a[1] > b[1] and a[2] < b[2] then
-        return {(a[1] + xs), (a[2] - ys)}, {(b[1] - xs), (b[2] + ys)}
-    elseif a[1] > b[1] and a[2] > b[2] then
-        return {(a[1] + xs), (a[2] + ys)}, {(b[1] - xs), (b[2] - ys)}
+    if a.x < b.x and a.y < b.y then
+        return {
+            x = (a.x - xs),
+            y = (a.y - ys)
+        }, {
+            x = (b.x + xs),
+            y = (b.y + ys)
+        }
+    elseif a.x < b.x and a.y > b.y then
+        return {
+            x = (a.x - xs),
+            y = (a.y + ys)
+        }, {
+            x = (b.x + xs),
+            y = (b.y - ys)
+        }
+    elseif a.x > b.x and a.y < b.y then
+        return {
+            x = (a.x + xs),
+            y = (a.y - ys)
+        }, {
+            x = (b.x - xs),
+            y = (b.y + ys)
+        }
+    elseif a.x > b.x and a.y > b.y then
+        return {
+            x = (a.x + xs),
+            y = (a.y + ys)
+        }, {
+            x = (b.x - xs),
+            y = (b.y - ys)
+        }
     end
 end
 
@@ -76,10 +95,10 @@ end
 function Day08:valid_antinode_positions(p1, p2, scalar)
     local a1, a2 = antinode_positions(p1, p2, scalar)
     local pos = {}
-    if self:valid_position(a1) then
+    if not self.input:is_out_of_bounds(a1) then
         table.insert(pos, a1)
     end
-    if self:valid_position(a2) then
+    if not self.input:is_out_of_bounds(a2) then
         table.insert(pos, a2)
     end
     return table.unpack(pos)
@@ -148,25 +167,20 @@ function Input:new(o)
 
     local state = {
         antennas = {},
-        positions = {},
-        dimensions = {
-            width = #lines[1],
-            height = #lines
-        }
+        positions = {}
     }
-    local empty_space = "."
-    for x, line in pairs(lines) do
-        for y = 1, #line do
-            if line:byte(y) ~= empty_space:byte(1) then
-                state.antennas[x] = state.antennas[x] or {}
-                state.antennas[x][y] = line:byte(y)
-                state.positions[line:byte(y)] = state.positions[line:byte(y)] or {}
-                table.insert(state.positions[line:byte(y)], {x, y})
-            end
-        end
-    end
 
-    o.input = state
+    local grid = Grid:new(state, lines, function(g, x, y, line)
+        g.antennas[x] = g.antennas[x] or {}
+        g.antennas[x][y] = line:byte(y)
+        g.positions[line:byte(y)] = g.positions[line:byte(y)] or {}
+        table.insert(g.positions[line:byte(y)], {
+            x = x,
+            y = y
+        })
+    end)
+
+    o.input = grid
     return o
 end
 
