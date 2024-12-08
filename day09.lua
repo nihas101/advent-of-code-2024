@@ -21,6 +21,10 @@ function Part1:new(input)
     return o
 end
 
+function Part1:solve()
+    return 0
+end
+
 local Part2 = Day09:new()
 
 function Part2:new(input)
@@ -28,6 +32,10 @@ function Part2:new(input)
     Day09.new(self, o)
 
     return o
+end
+
+function Part2:solve()
+    return 0
 end
 
 local Input = {}
